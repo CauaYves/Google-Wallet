@@ -45,8 +45,8 @@ export default function Home() {
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="classId">ID da Classe</Label>
-            <Input id="classId" name="classId" type="text" inputMode="text" required defaultValue={state.rawData.classId}/>
+            <Label htmlFor="classId">ID da Classe (Sem espaços em branco)</Label>
+            <Input id="classId" name="classId" type="text" inputMode="text" required defaultValue={state.rawData.classId} pattern="\S+"/>
           </div>
 
           <div className="space-y-1">

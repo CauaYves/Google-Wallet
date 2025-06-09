@@ -1,37 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Google Wallet Web Teste
 
-## Getting Started
+Este projeto demonstra como criar e emitir cartões customizados no Google Wallet usando Next.js (app router), Server Actions e a API do Google Wallet.
 
-First, run the development server:
+### Preencha o arquivo .env com as suas chaves da api Google Wallet que você obteve através do google console.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+**Como consigo uma chave de emissor?**
+
+- siga esse tutorial do google: [https://developers.google.com/wallet?hl=pt-br](https://developers.google.com/wallet?hl=pt-br)
+
+![1749508434516](image/README/1749508434516.png)
+
+### Tecnologias
+
+Next.js 14+ (App Router);
+React Server Actions (useActionState);
+TypeScript;
+Tailwind CSS;
+Node.js 18+;
+
+### Pré-requisitos
+
+* Conta de desenvolvedor Google Wallet com issuerId válido
+* Arquivo credentials.json no root com as credenciais da API
+* Node.js instalado (>= 18)
+
+### Instalação
+
+#### Clone o repositório:
+
+`git clone https://github.com/CauaYves/Google-Wallet.git`
+
+#### Instale dependências:
+
+`npm install`
+
+#### Crie um arquivo .env.local na raiz com as variáveis:
+
+```
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+GOOGLE_WALLET_ISSUER_ID=seu.issuerId
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### Adicione seu credentials.json (fornecido pelo Google) no root:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+![1749508795128](image/README/1749508795128.png)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Estrutura
 
-## Learn More
+**/app/page.tsx** – Formulário UI para entrada de dados
 
-To learn more about Next.js, take a look at the following resources:
+**/app/actions.ts** – Server Action que:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+* Cria (ou garante) a classe no Google Wallet
+* Gera objeto (pass) e retorna a URL para salvar
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**/app/api/wallet/class/route.ts** – Endpoint de criação de Classe
 
-## Deploy on Vercel
+**/app/api/wallet/object/route.ts** – Endpoint de criação de Objeto
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+#### Configuração do Formulário
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# google-wallet
+* No page.tsx, preencha:
+* E-mail
+* ID da classe (ex: minhaClasse → issuerId.minhaClasse)
+* Título
+* Subtítulo
+* Data
+* Validade
+* URL da Imagem Principal
+* URL da Logo
+* Cor de fundo (hex)
+
+**Ao submeter, a Server Action:**
+
+* Chama /api/wallet/class (cria/clona a classe)
+* Chama /api/wallet/object (cria pass e gera JWT)
+* Exibe botão que aponta para URL do Google Wallet
+
+**API Routes**
+
+*/api/wallet/class (POST)*
+
+* Recebe JSON com: id: `<issuerId>`.`<classId>, `classTemplateInfo, imageModulesData, textModulesData
+
+> Retorna 201 (criado) ou 200 se já existir
+
+*/api/wallet/object (POST)*
+
+* Recebe JSON completo do objeto (incluindo id, classId, heroImage, logo, etc.)
+* Gera JWT savetowallet
+
+> Retorna { saveUrl } (link para salvar no Wallet)
+
+### Scripts disponíveis
+
+**npm run dev** # Inicia em modo desenvolvimento
+**npm run build** # Gera build de produção
+**npm run start** # Inicia app em produção
+
+**Observações**
+
+GOOGLE_WALLET_ISSUER_ID deve ser idempotente e corresponder ao issuerId do Google
+
+IDs de objetos são gerados com UUID para evitar colisões
+
+**⚠️ credentials.json não deve ser versionado em repositório público**
