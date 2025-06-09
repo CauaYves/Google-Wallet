@@ -1,5 +1,7 @@
 # Google Wallet Web Teste
 
+[▶️ Assista ao tutorial](./tutorial.mp4)
+
 Este projeto demonstra como criar e emitir cartões customizados no Google Wallet usando Next.js (app router), Server Actions e a API do Google Wallet.
 
 ### Preencha o arquivo .env com as suas chaves da api Google Wallet que você obteve através do google console.

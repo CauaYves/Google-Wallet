@@ -26,8 +26,8 @@ export default function Home() {
       title: "",
       validity: "",
       subheader: "",
-      heroImage: "",
-      logoImage: "",
+      heroImage: "https://upload.wikimedia.org/wikipedia/pt/a/ae/Kratos_GoW_Ragnarok.jpg",
+      logoImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3ZMDBVY4lhBsxeYkjZeH_GkHJnVfuNcbODg&s",
       bgColor:"#4285f4"
     }
   })
@@ -69,16 +69,31 @@ export default function Home() {
             <Input id="validity" name="validity" type="date" required defaultValue={state.rawData.validity}/>
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="heroImage">URL da Imagem Principal</Label>
-            <Input id="heroImage" name="heroImage" type="url" inputMode="url" placeholder="https://..." required defaultValue={state.rawData.heroImage}/>
+    <div className="space-y-1">
+            <Label htmlFor="heroImage">URL da Imagem Principal (.jpg)</Label>
+            <Input
+              id="heroImage"
+              name="heroImage"
+              type="url"
+              inputMode="url"
+              placeholder="https://exemplo.com/imagem.jpg"
+              required
+              defaultValue={state.rawData.heroImage}
+            />
           </div>
 
           <div className="space-y-1">
-            <Label htmlFor="logoImage">URL da Logo</Label>
-            <Input id="logoImage" name="logoImage" type="url" inputMode="url" placeholder="https://..." required defaultValue={state.rawData.logoImage}/>
+            <Label htmlFor="logoImage">URL da Logo (.jpg)</Label>
+            <Input
+              id="logoImage"
+              name="logoImage"
+              type="url"
+              inputMode="url"
+              placeholder="https://exemplo.com/logo.jpg"
+              required
+              defaultValue={state.rawData.logoImage}
+            />
           </div>
-
           <div className="space-y-1">
             <Label htmlFor="bgColor">Cor de Fundo (hex)</Label>
             <Input id="bgColor" name="bgColor" type="color" pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$" placeholder="#4285f4" />
