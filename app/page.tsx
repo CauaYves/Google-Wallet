@@ -13,15 +13,24 @@ import Image from "next/image"
 import { useActionState } from "react"
 import { createPassAction } from "./actions"
 
-const initialState = {
-  saveUrl: "",
-  error: ""
-}
-
 
 
 export default function Home() {
-  const [state, formAction] = useActionState(createPassAction, initialState)
+  const [state, formAction, isLoading] = useActionState(createPassAction, {
+    saveUrl: "",
+    error: "",
+    rawData: {
+      classId: "",
+      date: "",
+      email: "",
+      title: "",
+      validity: "",
+      subheader: "",
+      heroImage: "",
+      logoImage: "",
+      bgColor:"#4285f4"
+    }
+  })
 
   return (
     <Card className="max-w-xl mx-auto mt-10">
@@ -32,37 +41,57 @@ export default function Home() {
         <form action={formAction} className="space-y-4">
           <div className="space-y-1">
             <Label htmlFor="email">E-mail</Label>
-            <Input id="email" name="email" type="email" required />
+            <Input id="email" name="email" type="email" autoComplete="email" required defaultValue={state.rawData.email}/>
           </div>
 
           <div className="space-y-1">
             <Label htmlFor="classId">ID da Classe</Label>
-            <Input id="classId" name="classId" type="text" defaultValue="3388000000022937798.custom_class" required />
+            <Input id="classId" name="classId" type="text" inputMode="text" required defaultValue={state.rawData.classId}/>
           </div>
 
           <div className="space-y-1">
             <Label htmlFor="title">Título do Cartão</Label>
-            <Input id="title" name="title" type="text" required />
+            <Input id="title" name="title" type="text" inputMode="text" required defaultValue={state.rawData.title}/>
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="subheader">Subtítulo</Label>
+            <Input id="subheader" name="subheader" type="text" inputMode="text" defaultValue={state.rawData.subheader}/>
           </div>
 
           <div className="space-y-1">
             <Label htmlFor="date">Data</Label>
-            <Input id="date" name="date" type="text" placeholder="09/06/2025" required />
+            <Input id="date" name="date" type="date" required defaultValue={state.rawData.date}/>
           </div>
 
           <div className="space-y-1">
             <Label htmlFor="validity">Validade</Label>
-            <Input id="validity" name="validity" type="text" placeholder="09/07/2025" required />
+            <Input id="validity" name="validity" type="date" required defaultValue={state.rawData.validity}/>
           </div>
 
-          <Button type="submit">Criar Cartão</Button>
+          <div className="space-y-1">
+            <Label htmlFor="heroImage">URL da Imagem Principal</Label>
+            <Input id="heroImage" name="heroImage" type="url" inputMode="url" placeholder="https://..." required defaultValue={state.rawData.heroImage}/>
+          </div>
 
-          {state.error && <p className="text-red-500 font-medium">Erro: {state.error}</p>}
+          <div className="space-y-1">
+            <Label htmlFor="logoImage">URL da Logo</Label>
+            <Input id="logoImage" name="logoImage" type="url" inputMode="url" placeholder="https://..." required defaultValue={state.rawData.logoImage}/>
+          </div>
+
+          <div className="space-y-1">
+            <Label htmlFor="bgColor">Cor de Fundo (hex)</Label>
+            <Input id="bgColor" name="bgColor" type="color" pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$" placeholder="#4285f4" />
+          </div>
+
+          <Button disabled={isLoading} type="submit">{isLoading ? "Criando cartão..." : "Criar Cartão"}</Button>
+
+          {state.error && <p className="text-red-500 font-medium">Erro: {JSON.stringify(state.error)}</p>}
 
           {state.saveUrl && (
-            <div className="pt-4">
+            <div className="pt-4 flex justify-center">
               <a href={state.saveUrl} target="_blank" rel="noopener noreferrer">
-                <Image width={200} height={200} src="/wallet-button.png" alt="Salvar no Google Wallet" />
+                <Image width={200} height={64} src="/wallet-button.png" alt="Salvar no Google Wallet" />
               </a>
             </div>
           )}
