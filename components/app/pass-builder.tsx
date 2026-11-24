@@ -115,11 +115,11 @@ export function PassBuilder({ defaults, demoAvailable }: PassBuilderProps) {
   }
 
   return (
-    <form onSubmit={submit} className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <form onSubmit={submit} className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8">
       <div className="flex flex-col gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>1. Credenciais</CardTitle>
+            <CardTitle>Credenciais</CardTitle>
             <CardDescription>Escolha em nome de qual emissor o passe será criado.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-6">
@@ -232,7 +232,7 @@ export function PassBuilder({ defaults, demoAvailable }: PassBuilderProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>2. Monte o passe</CardTitle>
+            <CardTitle>Monte o passe</CardTitle>
             <CardDescription>Tudo aqui é da sua marca: emissor, cores, logo e campos.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -436,11 +436,13 @@ export function PassBuilder({ defaults, demoAvailable }: PassBuilderProps) {
       <aside className="flex flex-col gap-4 lg:sticky lg:top-6">
         <Card>
           <CardHeader>
-            <CardTitle>3. Gere o link</CardTitle>
+            <CardTitle>Prévia e link</CardTitle>
             <CardDescription>A prévia é aproximada: o layout final é do Google Wallet.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center gap-5">
-            <PassPreview pass={pass} />
+            <div className="flex w-full justify-center rounded-field bg-muted px-4 py-6">
+              <PassPreview pass={pass} />
+            </div>
 
             <Button type="submit" size="lg" className="w-full" disabled={isPending}>
               {isPending ? "Gerando passe..." : "Gerar passe"}

@@ -1,10 +1,6 @@
-"use client"
-
-// Cliente porque Accordion e Badge do Mosaico usam APIs de cliente sem declarar "use client".
-import { InfoIcon } from "@phosphor-icons/react"
+import { InfoIcon } from "@phosphor-icons/react/dist/ssr"
 import type * as React from "react"
 import { GoToTabButton } from "@/components/app/studio-tabs"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/mosaico/accordion"
 import { Alert, AlertDescription, AlertTitle } from "@/components/mosaico/alert"
 
 function ExternalLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -111,41 +107,48 @@ const STEPS: { title: string; body: React.ReactNode }[] = [
 
 export function CredentialsGuide() {
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-10 text-base">
       <section className="flex flex-col gap-3">
-        <h2 className="font-heading text-2xl font-semibold tracking-tight">Crie as suas credenciais</h2>
-        <p className="max-w-[70ch] text-muted-foreground">
+        <h2 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
+          Seis passos até as suas credenciais
+        </h2>
+        <p className="max-w-[66ch] text-muted-foreground">
           Para emitir passes em nome da sua empresa você precisa de duas coisas: o <strong>issuer ID</strong> e a{" "}
           <strong>chave de uma conta de serviço</strong> autorizada. O processo é gratuito e leva cerca de 15
           minutos.
         </p>
       </section>
 
-      <Alert>
+      <Alert className="max-w-3xl">
         <InfoIcon />
         <AlertTitle>Só quer ver funcionando?</AlertTitle>
         <AlertDescription>
-          Pule este passo e use as credenciais de demonstração na etapa 3, quando estiverem disponíveis neste
+          Pule esta etapa e use as credenciais de demonstração na etapa 3, quando estiverem disponíveis neste
           servidor.
         </AlertDescription>
       </Alert>
 
-      <Accordion defaultValue={[0]}>
+      <ol className="flex max-w-3xl flex-col">
         {STEPS.map((step, index) => (
-          <AccordionItem key={step.title} value={index}>
-            <AccordionTrigger>
-              {index + 1}. {step.title}
-            </AccordionTrigger>
-            <AccordionContent>
-              <div className="flex max-w-[70ch] flex-col gap-3 text-muted-foreground [&_code]:rounded-sm [&_code]:bg-muted [&_code]:px-1 [&_code]:font-mono [&_code]:text-[0.85em] [&_strong]:font-medium [&_strong]:text-foreground">
+          <li key={step.title} className="group grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-4 sm:gap-x-6">
+            <div className="flex flex-col items-center">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-highlight font-heading text-base font-semibold text-highlight-foreground tabular-nums">
+                {index + 1}
+              </span>
+              {/* O trilho liga um passo ao seguinte e some no último. */}
+              <span aria-hidden="true" className="w-px flex-1 bg-border group-last:hidden" />
+            </div>
+            <div className="flex flex-col gap-3 pb-10 group-last:pb-0">
+              <h3 className="pt-1 font-heading text-lg leading-snug font-semibold">{step.title}</h3>
+              <div className="flex flex-col gap-3 text-muted-foreground [&_code]:rounded-sm [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] [&_code]:break-words [&_code]:text-foreground [&_strong]:font-medium [&_strong]:text-foreground">
                 {step.body}
               </div>
-            </AccordionContent>
-          </AccordionItem>
+            </div>
+          </li>
         ))}
-      </Accordion>
+      </ol>
 
-      <p className="max-w-[70ch] text-sm text-muted-foreground">
+      <p className="max-w-[66ch] text-sm text-muted-foreground">
         A referência oficial está em{" "}
         <ExternalLink href="https://developers.google.com/wallet/generic/getting-started/onboarding-guide">
           developers.google.com/wallet

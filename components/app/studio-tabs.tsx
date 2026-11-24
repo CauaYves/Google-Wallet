@@ -7,7 +7,35 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/mosaico/t
 
 export type StudioTab = "entenda" | "credenciais" | "criar"
 
-const TabContext = React.createContext<(tab: StudioTab) => void>(() => {})
+type StudioState = {
+  tab: StudioTab
+  setTab: (tab: StudioTab) => void
+  goTo: (tab: StudioTab) => void
+  anchorRef: React.RefObject<HTMLDivElement | null>
+}
+
+const StudioContext = React.createContext<StudioState | null>(null)
+
+function useStudio(): StudioState {
+  const state = React.useContext(StudioContext)
+  if (!state) throw new Error("Use este componente dentro de StudioProvider.")
+  return state
+}
+
+/** Guarda a etapa aberta. Envolve a página para que o topo também consiga trocar de etapa. */
+export function StudioProvider({ children }: { children: React.ReactNode }) {
+  const [tab, setTab] = React.useState<StudioTab>("entenda")
+  const anchorRef = React.useRef<HTMLDivElement | null>(null)
+
+  const goTo = React.useCallback((next: StudioTab) => {
+    setTab(next)
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    anchorRef.current?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" })
+  }, [])
+
+  const state = React.useMemo(() => ({ tab, setTab, goTo, anchorRef }), [tab, goTo])
+  return <StudioContext.Provider value={state}>{children}</StudioContext.Provider>
+}
 
 type StudioTabsProps = {
   learn: React.ReactNode
@@ -15,40 +43,58 @@ type StudioTabsProps = {
   builder: React.ReactNode
 }
 
+const STEPS: { value: StudioTab; label: string }[] = [
+  { value: "entenda", label: "Entenda" },
+  { value: "credenciais", label: "Credenciais" },
+  { value: "criar", label: "Criar passe" },
+]
+
 /** As três etapas da página: entender, preparar as credenciais e criar o passe. */
 export function StudioTabs({ learn, guide, builder }: StudioTabsProps) {
-  const [tab, setTab] = React.useState<StudioTab>("entenda")
-
-  const goTo = React.useCallback((next: StudioTab) => {
-    setTab(next)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }, [])
+  const { tab, setTab, anchorRef } = useStudio()
 
   return (
-    <TabContext.Provider value={goTo}>
-      <Tabs value={tab} onValueChange={(value) => setTab(value as StudioTab)} className="gap-8">
-        <TabsList className="self-center">
-          <TabsTrigger value="entenda">1. Entenda</TabsTrigger>
-          <TabsTrigger value="credenciais">2. Credenciais</TabsTrigger>
-          <TabsTrigger value="criar">3. Criar passe</TabsTrigger>
+    <div ref={anchorRef} className="scroll-mt-4">
+      <Tabs value={tab} onValueChange={(value) => setTab(value as StudioTab)} className="gap-8 sm:gap-10">
+        <TabsList
+          aria-label="Etapas"
+          className="w-full group-data-horizontal/tabs:h-11 sm:w-fit"
+        >
+          {STEPS.map((step, index) => (
+            <TabsTrigger key={step.value} value={step.value} className="px-2 sm:px-5">
+              <span className="tabular-nums opacity-60">{index + 1}</span>
+              {step.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
-        <TabsContent value="entenda">{learn}</TabsContent>
-        <TabsContent value="credenciais">{guide}</TabsContent>
-        <TabsContent value="criar">{builder}</TabsContent>
+        {/* keepMounted: trocar de etapa não apaga o que já foi preenchido no passe. */}
+        <TabsContent value="entenda" keepMounted>
+          {learn}
+        </TabsContent>
+        <TabsContent value="credenciais" keepMounted>
+          {guide}
+        </TabsContent>
+        <TabsContent value="criar" keepMounted>
+          {builder}
+        </TabsContent>
       </Tabs>
-    </TabContext.Provider>
+    </div>
   )
 }
 
-type GoToTabButtonProps = Omit<React.ComponentProps<typeof Button>, "onClick"> & { tab: StudioTab }
+type GoToTabButtonProps = Omit<React.ComponentProps<typeof Button>, "onClick"> & {
+  tab: StudioTab
+  /** false tira a seta, para botões que não são o passo seguinte. */
+  arrow?: boolean
+}
 
-/** Botão que leva a outra etapa. Funciona em qualquer conteúdo renderizado dentro de StudioTabs. */
-export function GoToTabButton({ tab, children, ...props }: GoToTabButtonProps) {
-  const goTo = React.useContext(TabContext)
+/** Botão que leva a outra etapa. Funciona em qualquer lugar dentro de StudioProvider. */
+export function GoToTabButton({ tab, arrow = true, children, ...props }: GoToTabButtonProps) {
+  const { goTo } = useStudio()
   return (
     <Button {...props} onClick={() => goTo(tab)}>
       {children}
-      <ArrowRightIcon data-icon="inline-end" />
+      {arrow && <ArrowRightIcon data-icon="inline-end" />}
     </Button>
   )
 }

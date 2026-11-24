@@ -131,7 +131,11 @@ Todas são opcionais e lidas **só no servidor**. Modelo em [`.env.example`](.en
 ## Personalização da marca
 
 - **Passe**: tudo vem do formulário ou das variáveis `WALLET_DEFAULT_*`.
-- **Interface**: usa o [Mosaico](https://github.com/CauaYves/mosaico), um design system distribuído pelo registry do shadcn. Os componentes ficam em `components/mosaico/` e o `app/globals.css` é reescrito pelo CLI. As cores do projeto ficam em [`app/theme.css`](app/theme.css), carregado depois: hoje é um tema neutro, e é ali que você põe as cores da sua empresa.
+- **Interface**: usa o [Mosaico](https://github.com/CauaYves/mosaico), um design system distribuído pelo registry do shadcn. Os componentes ficam em `components/mosaico/` e o `app/globals.css` é reescrito pelo CLI. As cores do projeto ficam em [`app/theme.css`](app/theme.css), carregado depois: hoje é um tema sem marca, em tons de azul-petróleo, e é ali que você põe as cores da sua empresa.
+
+- **Tema claro e escuro**: a página segue o tema do sistema e tem um seletor no topo (claro, escuro ou sistema). A escolha fica no `localStorage` do navegador, e o [`next-themes`](https://github.com/pacocoursey/next-themes) aplica a classe `dark` antes da primeira pintura, sem piscar. As cores dos dois temas estão em `app/theme.css`, em `:root` e `.dark`.
+- **Fonte dos títulos**: Bricolage Grotesque, definida em `app/layout.tsx` e ligada pela variável `--heading-font` do tema. O texto corrido usa a Geist, a fonte do Mosaico.
+- **Passes de exemplo**: as cores do leque do topo e da lista de tipos são as variáveis `--pass-*` do mesmo arquivo.
 
 Para adicionar ou atualizar um componente do Mosaico:
 
