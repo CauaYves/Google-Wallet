@@ -109,6 +109,14 @@ Na aba **Criar passe**:
 
 As imagens precisam ser URLs públicas com `https://`.
 
+### ID da classe
+
+Em **Usar minhas credenciais** você escolhe o ID da classe. No Google Wallet esse ID é único no emissor inteiro, somando todos os tipos de passe: se `meu_passe` já existe como passe genérico, não dá para criar um ingresso com o mesmo ID.
+
+- O ID sugerido termina com o tipo (`passe_generico`, `passe_ingresso`, `passe_fidelidade`, `passe_oferta`, `passe_vale_presente`) e troca junto quando você muda o tipo.
+- Você pode digitar outro ID. Se ele já existir com outro tipo, o app avisa qual é o tipo existente e oferece um ID livre. A classe que já existe não é alterada.
+- Usar um ID que já existe com o mesmo tipo atualiza a classe com os dados do formulário.
+
 ## Variáveis de ambiente
 
 Todas são opcionais e lidas **só no servidor**. Modelo em [`.env.example`](.env.example).
