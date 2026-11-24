@@ -1,117 +1,34 @@
-"use client"
+import { CredentialsGuide } from "@/components/app/credentials-guide"
+import { LearnSection } from "@/components/app/learn-section"
+import { PassBuilder } from "@/components/app/pass-builder"
+import { StudioTabs } from "@/components/app/studio-tabs"
+import { readAppConfig } from "@/lib/config"
+import { isDemoAvailable } from "@/lib/wallet/credentials"
 
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Input,
-  Label
-} from "@/components/ui"
-import Image from "next/image"
-import { useActionState } from "react"
-import { createPassAction } from "./actions"
-
-
+// As variáveis de ambiente são lidas a cada requisição, não no build.
+export const dynamic = "force-dynamic"
 
 export default function Home() {
-  const [state, formAction, isLoading] = useActionState(createPassAction, {
-    saveUrl: "",
-    error: "",
-    rawData: {
-      classId: "",
-      date: "",
-      email: "",
-      title: "",
-      validity: "",
-      subheader: "",
-      heroImage: "https://upload.wikimedia.org/wikipedia/pt/a/ae/Kratos_GoW_Ragnarok.jpg",
-      logoImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3ZMDBVY4lhBsxeYkjZeH_GkHJnVfuNcbODg&s",
-      bgColor:"#4285f4"
-    }
-  })
+  const config = readAppConfig()
 
   return (
-    <Card className="max-w-xl mx-auto mt-10">
-      <CardHeader>
-        <CardTitle>Gerar Cartão Personalizado</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form action={formAction} className="space-y-4">
-          <div className="space-y-1">
-            <Label htmlFor="email">E-mail</Label>
-            <Input id="email" name="email" type="email" autoComplete="email" required defaultValue={state.rawData.email}/>
-          </div>
+    <main className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-10 sm:px-6 sm:py-14">
+      <header className="flex flex-col gap-3 text-center">
+        <p className="text-sm font-medium text-muted-foreground">{config.appName}</p>
+        <h1 className="font-heading text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+          Emita passes para o Google Wallet
+        </h1>
+        <p className="mx-auto max-w-[60ch] text-muted-foreground text-pretty">
+          Entenda a integração, crie as suas credenciais e gere o botão Adicionar ao Google Wallet para
+          carteirinhas, ingressos, cartões de fidelidade, cupons e vales-presente.
+        </p>
+      </header>
 
-          <div className="space-y-1">
-            <Label htmlFor="classId">ID da Classe (Sem espaços em branco)</Label>
-            <Input id="classId" name="classId" type="text" inputMode="text" required defaultValue={state.rawData.classId} pattern="\S+"/>
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="title">Título do Cartão</Label>
-            <Input id="title" name="title" type="text" inputMode="text" required defaultValue={state.rawData.title}/>
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="subheader">Subtítulo</Label>
-            <Input id="subheader" name="subheader" type="text" inputMode="text" defaultValue={state.rawData.subheader}/>
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="date">Data</Label>
-            <Input id="date" name="date" type="date" required defaultValue={state.rawData.date}/>
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="validity">Validade</Label>
-            <Input id="validity" name="validity" type="date" required defaultValue={state.rawData.validity}/>
-          </div>
-
-    <div className="space-y-1">
-            <Label htmlFor="heroImage">URL da Imagem Principal (.jpg)</Label>
-            <Input
-              id="heroImage"
-              name="heroImage"
-              type="url"
-              inputMode="url"
-              placeholder="https://exemplo.com/imagem.jpg"
-              required
-              defaultValue={state.rawData.heroImage}
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="logoImage">URL da Logo (.jpg)</Label>
-            <Input
-              id="logoImage"
-              name="logoImage"
-              type="url"
-              inputMode="url"
-              placeholder="https://exemplo.com/logo.jpg"
-              required
-              defaultValue={state.rawData.logoImage}
-            />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="bgColor">Cor de Fundo (hex)</Label>
-            <Input id="bgColor" name="bgColor" type="color" pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$" placeholder="#4285f4" />
-          </div>
-
-          <Button disabled={isLoading} type="submit">{isLoading ? "Criando cartão..." : "Criar Cartão"}</Button>
-
-          {state.error && <p className="text-red-500 font-medium">Erro: {JSON.stringify(state.error)}</p>}
-
-          {state.saveUrl && (
-            <div className="pt-4 flex justify-center">
-              <a href={state.saveUrl} target="_blank" rel="noopener noreferrer">
-                <Image width={200} height={64} src="/wallet-button.png" alt="Salvar no Google Wallet" />
-              </a>
-            </div>
-          )}
-        </form>
-      </CardContent>
-    </Card>
+      <StudioTabs
+        learn={<LearnSection />}
+        guide={<CredentialsGuide />}
+        builder={<PassBuilder defaults={config.defaults} demoAvailable={isDemoAvailable()} />}
+      />
+    </main>
   )
 }
