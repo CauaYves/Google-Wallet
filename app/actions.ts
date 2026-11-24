@@ -9,6 +9,7 @@ import {
   resolveOwnCredentials,
   type WalletCredentials,
 } from "@/lib/wallet/credentials"
+import { suggestClassSuffix } from "@/lib/wallet/class-id"
 import { createSaveUrl, ensureClass, WalletApiError } from "@/lib/wallet/google"
 import { buildPass, normalizePassInput, PassValidationError } from "@/lib/wallet/pass-builder"
 import type { CreatePassRequest, CreatePassResult, PassInput } from "@/lib/wallet/types"
@@ -33,6 +34,8 @@ function demoClassSuffix(pass: PassInput): string {
  * descartadas ao final. Não são gravadas nem registradas em log, e nunca voltam na resposta.
  */
 export async function createPassAction(request: CreatePassRequest): Promise<CreatePassResult> {
+  // Guardado fora do try para sugerir outro ID quando o Google recusa o da pessoa.
+  let ownPass: PassInput | undefined
   try {
     const mode = request?.mode
     if (mode !== "demo" && mode !== "own") {
@@ -64,6 +67,7 @@ export async function createPassAction(request: CreatePassRequest): Promise<Crea
       pass = { ...pass, classSuffix: demoClassSuffix(pass) }
     } else {
       credentials = resolveOwnCredentials(request.credentials)
+      ownPass = pass
     }
 
     const built = buildPass(credentials.issuerId, pass, randomUUID())
@@ -76,6 +80,16 @@ export async function createPassAction(request: CreatePassRequest): Promise<Crea
       return { ok: false, error: error.message }
     }
     if (error instanceof WalletApiError) {
+      if (error.classTypeConflict && ownPass) {
+        const suggestion = suggestClassSuffix(ownPass.classSuffix, ownPass.type)
+        return {
+          ok: false,
+          error: error.message,
+          hint: error.hint,
+          // Sem sugestão quando ela seria o próprio ID recusado.
+          suggestedClassSuffix: suggestion === ownPass.classSuffix ? undefined : suggestion,
+        }
+      }
       return { ok: false, error: error.message, hint: error.hint }
     }
     // Nunca registre `request` aqui: no modo "own" ele contém a chave privada de quem enviou.

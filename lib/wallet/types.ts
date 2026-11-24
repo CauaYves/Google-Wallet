@@ -121,6 +121,12 @@ export type CreatePassRequest = {
 
 export type CreatePassResult =
   | { ok: true; saveUrl: string; classId: string; objectId: string; classStatus: "created" | "updated" | "reused" }
-  | { ok: false; error: string; hint?: string }
+  | {
+      ok: false
+      error: string
+      hint?: string
+      /** ID de classe livre de conflito de tipo, para a pessoa aplicar com um clique. */
+      suggestedClassSuffix?: string
+    }
 
 export const MAX_FIELDS = 8

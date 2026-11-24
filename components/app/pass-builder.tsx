@@ -22,6 +22,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/mosaico/native-se
 import { RadioGroup, RadioGroupItem } from "@/components/mosaico/radio-group"
 import { Textarea } from "@/components/mosaico/textarea"
 import type { AppConfig } from "@/lib/config"
+import { defaultClassSuffix, suggestClassSuffix } from "@/lib/wallet/class-id"
 import {
   BARCODE_LABELS,
   BARCODE_TYPES,
@@ -52,7 +53,7 @@ export function PassBuilder({ defaults, demoAvailable }: PassBuilderProps) {
 
   const [pass, setPass] = React.useState<PassInput>({
     type: "generic",
-    classSuffix: "meu_primeiro_passe",
+    classSuffix: defaultClassSuffix("generic"),
     issuerName: defaults.issuerName,
     title: "",
     header: "",
@@ -72,6 +73,15 @@ export function PassBuilder({ defaults, demoAvailable }: PassBuilderProps) {
   const info = PASS_TYPE_INFO[pass.type]
   const update = <K extends keyof PassInput>(key: K, value: PassInput[K]) =>
     setPass((current) => ({ ...current, [key]: value }))
+
+  // Ao trocar o tipo, o ID da classe troca junto: um ID de classe serve a um só tipo.
+  const changeType = (type: PassType) =>
+    setPass((current) => ({ ...current, type, classSuffix: suggestClassSuffix(current.classSuffix, type) }))
+
+  const applySuggestedClassSuffix = (classSuffix: string) => {
+    update("classSuffix", classSuffix)
+    setResult(null)
+  }
 
   const updateField = (index: number, key: "label" | "value", value: string) =>
     setPass((current) => ({
@@ -239,7 +249,7 @@ export function PassBuilder({ defaults, demoAvailable }: PassBuilderProps) {
             <FieldGroup>
               <Field>
                 <FieldLabel>Tipo de passe</FieldLabel>
-                <NativeSelect value={pass.type} onChange={(event) => update("type", event.target.value as PassType)}>
+                <NativeSelect value={pass.type} onChange={(event) => changeType(event.target.value as PassType)}>
                   {PASS_TYPES.map((type) => (
                     <NativeSelectOption key={type} value={type}>
                       {PASS_TYPE_INFO[type].label}
@@ -272,7 +282,8 @@ export function PassBuilder({ defaults, demoAvailable }: PassBuilderProps) {
                       required
                     />
                     <FieldDescription>
-                      Sem espaços. Usar um ID que já existe atualiza a classe com os dados abaixo.
+                      Sem espaços. Cada ID serve a um só tipo de passe, por isso ele acompanha o tipo escolhido.
+                      Usar um ID que já existe com este tipo atualiza a classe com os dados abaixo.
                     </FieldDescription>
                   </Field>
                 )}
@@ -454,6 +465,21 @@ export function PassBuilder({ defaults, demoAvailable }: PassBuilderProps) {
                   <WarningCircleIcon />
                   <AlertTitle>{result.error}</AlertTitle>
                   {result.hint && <AlertDescription>{result.hint}</AlertDescription>}
+                  {result.suggestedClassSuffix && (
+                    <AlertDescription>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-1 h-auto min-h-8 py-1 text-left whitespace-normal"
+                        onClick={() => applySuggestedClassSuffix(result.suggestedClassSuffix!)}
+                      >
+                        <span>
+                          Usar o ID <span className="font-mono break-all">{result.suggestedClassSuffix}</span>
+                        </span>
+                      </Button>
+                    </AlertDescription>
+                  )}
                 </Alert>
               )}
 

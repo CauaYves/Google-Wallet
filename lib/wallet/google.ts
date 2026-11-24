@@ -5,6 +5,7 @@
 import "server-only"
 import { JWT } from "google-auth-library"
 import jwt from "jsonwebtoken"
+import { parseClassTypeConflict, type ClassTypeConflict } from "./class-id"
 import type { WalletCredentials } from "./credentials"
 import { buildSaveClaims, type BuiltPass } from "./pass-builder"
 
@@ -16,7 +17,9 @@ export class WalletApiError extends Error {
   constructor(
     message: string,
     readonly status: number,
-    readonly hint?: string
+    readonly hint?: string,
+    /** Preenchido quando o ID da classe já existe no emissor com outro tipo de passe. */
+    readonly classTypeConflict?: ClassTypeConflict
   ) {
     super(message)
   }
@@ -59,11 +62,21 @@ function toWalletApiError(error: unknown): WalletApiError {
       "Confira se o issuer ID está correto e pertence à mesma conta em que a conta de serviço foi autorizada."
     )
   }
+  // O ID de classe é único no emissor, somando todos os tipos de passe.
+  const conflict = parseClassTypeConflict(googleMessage)
+  if (conflict) {
+    return new WalletApiError(
+      `Este ID de classe já existe no seu emissor como passe do tipo ${conflict.existingLabel}.`,
+      status,
+      "Um ID de classe serve a um só tipo de passe. Use outro ID para este passe. A classe que já existe não foi alterada.",
+      conflict
+    )
+  }
   if (status === 400) {
     return new WalletApiError(
       `O Google rejeitou os dados do passe${googleMessage ? `: ${googleMessage}` : "."}`,
       status,
-      "Verifique se as URLs de imagem são públicas e se os campos obrigatórios foram preenchidos."
+      "A mensagem acima veio do Google e costuma dizer qual campo está errado. Causas comuns: URL de imagem que não é pública e campo obrigatório vazio."
     )
   }
   if (!status) {
