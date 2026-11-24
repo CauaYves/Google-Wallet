@@ -4,6 +4,9 @@ Aplicação web para aprender a integrar o **Google Wallet** e emitir passes (ca
 
 O projeto não é de nenhuma empresa específica: nome do emissor, cores, logo e campos do passe são configuração. Serve como demonstração, como ferramenta interna ou como ponto de partida para a sua integração.
 
+<img width="1372" height="997" alt="image" src="https://github.com/user-attachments/assets/6a1c6329-497c-434d-963d-1eb8ba4544b4" />
+<img width="1420" height="996" alt="image" src="https://github.com/user-attachments/assets/953e8c12-9018-49fd-88e3-852a91e3d488" />
+
 - [O que é o Google Wallet](#o-que-é-o-google-wallet)
 - [Como rodar](#como-rodar)
 - [Os dois modos de credenciais](#os-dois-modos-de-credenciais)
