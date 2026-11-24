@@ -1,26 +1,122 @@
 /*
  * Tema do projeto. Carregado depois do globals.css (que é do Mosaico e é reescrito a cada
- * `shadcn add`). Este arquivo traz só as variáveis que mudam: aqui o tema é neutro, sem
- * cores de nenhuma marca. Para aplicar a identidade da sua empresa, troque os valores abaixo.
+ * `shadcn add`). Este arquivo traz só o que muda em relação ao kit: as cores dos dois temas,
+ * a fonte dos títulos e os poucos estilos próprios da página.
+ *
+ * O tema não usa as cores de nenhuma marca. Os neutros puxam de leve para o azul-petróleo
+ * (matiz 200 a 215) e a cor de ação é um petróleo fechado no claro e um menta suave no escuro.
+ * Para aplicar a identidade da sua empresa, troque os valores abaixo.
  */
 :root {
-  --primary: oklch(0.27 0.03 256);
-  --primary-foreground: oklch(0.985 0 0);
-  --ring: oklch(0.55 0.03 256);
-  --sidebar-primary: oklch(0.27 0.03 256);
-  --sidebar-ring: oklch(0.55 0.03 256);
-  --chart-brand: oklch(0.45 0.03 256);
-  --highlight: oklch(0.95 0.01 256);
-  --highlight-foreground: oklch(0.205 0 0);
+  /* O navegador pinta barras de rolagem e controles nativos conforme o tema em uso. */
+  color-scheme: light dark;
+
+  --heading-font: var(--font-display), var(--font-sans);
+
+  --background: oklch(0.985 0.004 210);
+  --foreground: oklch(0.22 0.025 225);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.025 225);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.025 225);
+  --primary: oklch(0.4 0.075 200);
+  --primary-foreground: oklch(0.985 0.01 190);
+  --secondary: oklch(0.955 0.008 210);
+  --secondary-foreground: oklch(0.26 0.03 225);
+  --muted: oklch(0.955 0.008 210);
+  --muted-foreground: oklch(0.47 0.025 225);
+  --accent: oklch(0.955 0.008 210);
+  --accent-foreground: oklch(0.26 0.03 225);
+  --border: oklch(0.905 0.01 210);
+  --input: oklch(0.87 0.012 210);
+  --ring: oklch(0.55 0.08 200);
+  --sidebar-primary: oklch(0.4 0.075 200);
+  --sidebar-ring: oklch(0.55 0.08 200);
+  --chart-brand: oklch(0.5 0.08 200);
+  --highlight: oklch(0.93 0.035 190);
+  --highlight-foreground: oklch(0.3 0.06 205);
+
+  /*
+   * Cores dos passes de exemplo (ilustração do topo e lista de tipos). São cores de passe,
+   * não de interface: valem nos dois temas e sempre levam texto claro por cima.
+   */
+  --pass-generic: oklch(0.44 0.085 215);
+  --pass-eventTicket: oklch(0.45 0.15 355);
+  --pass-loyalty: oklch(0.5 0.11 65);
+  --pass-offer: oklch(0.46 0.1 150);
+  --pass-giftCard: oklch(0.42 0.14 285);
+  --pass-ink: oklch(0.985 0.005 210);
 }
 
 .dark {
-  --primary: oklch(0.93 0.01 256);
-  --primary-foreground: oklch(0.205 0 0);
-  --ring: oklch(0.7 0.02 256);
-  --sidebar-primary: oklch(0.93 0.01 256);
-  --sidebar-ring: oklch(0.7 0.02 256);
-  --chart-brand: oklch(0.8 0.02 256);
-  --highlight: oklch(0.3 0.01 256);
-  --highlight-foreground: oklch(0.985 0 0);
+  color-scheme: dark;
+
+  --background: oklch(0.17 0.018 225);
+  --foreground: oklch(0.955 0.008 210);
+  --card: oklch(0.215 0.022 225);
+  --card-foreground: oklch(0.955 0.008 210);
+  --popover: oklch(0.215 0.022 225);
+  --popover-foreground: oklch(0.955 0.008 210);
+  --primary: oklch(0.84 0.085 185);
+  --primary-foreground: oklch(0.2 0.035 215);
+  --secondary: oklch(0.265 0.024 225);
+  --secondary-foreground: oklch(0.955 0.008 210);
+  --muted: oklch(0.265 0.024 225);
+  --muted-foreground: oklch(0.76 0.02 215);
+  --accent: oklch(0.265 0.024 225);
+  --accent-foreground: oklch(0.955 0.008 210);
+  --border: oklch(1 0 0 / 11%);
+  --input: oklch(1 0 0 / 18%);
+  --ring: oklch(0.72 0.08 190);
+  --sidebar-primary: oklch(0.84 0.085 185);
+  --sidebar-ring: oklch(0.72 0.08 190);
+  --chart-brand: oklch(0.8 0.08 190);
+  --highlight: oklch(0.31 0.045 200);
+  --highlight-foreground: oklch(0.92 0.05 185);
+
+  /* No escuro os passes de exemplo sobem um pouco de luz para não sumirem no fundo. */
+  --pass-generic: oklch(0.5 0.09 215);
+  --pass-eventTicket: oklch(0.5 0.15 355);
+  --pass-loyalty: oklch(0.55 0.11 65);
+  --pass-offer: oklch(0.51 0.1 150);
+  --pass-giftCard: oklch(0.49 0.14 285);
+}
+
+/* Tema escolhido à mão: fixa o esquema de cores também para os controles nativos. */
+:root.light {
+  color-scheme: light;
+}
+
+::selection {
+  background: var(--highlight);
+  color: var(--highlight-foreground);
+}
+
+/*
+ * Leque de passes do topo. Cada passe recebe --fan-x, --fan-y e --fan-r no elemento. Na
+ * carga da página eles saem empilhados e abrem em leque, uma vez só.
+ */
+.pass-fan > * {
+  transform: translate(var(--fan-x), var(--fan-y)) rotate(var(--fan-r));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pass-fan > * {
+    animation: pass-fan-open 900ms cubic-bezier(0.23, 1, 0.32, 1) both;
+    animation-delay: calc(var(--fan-i) * 70ms + 150ms);
+  }
+}
+
+@keyframes pass-fan-open {
+  from {
+    transform: translate(0, 12%) rotate(0deg);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  to {
+    transform: translate(var(--fan-x), var(--fan-y)) rotate(var(--fan-r));
+    opacity: 1;
+  }
 }

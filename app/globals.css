@@ -108,6 +108,40 @@
     transform: translateY(calc(-100% - var(--gap)));
     }
   }
+  @keyframes theme-reveal {
+  from {
+    mask-size: 0 0;
+    mask-position: var(--theme-x) var(--theme-y);
+    }
+  to {
+    mask-size: var(--theme-size) var(--theme-size);
+    mask-position: calc(var(--theme-x) - var(--theme-size) / 2) calc(var(--theme-y) - var(--theme-size) / 2);
+    }
+  }
+  @keyframes theme-icon-sun {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: rotate(-120deg) scale(0.4);
+    }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: rotate(0) scale(1);
+    }
+  }
+  @keyframes theme-icon-moon {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: rotate(70deg) translateY(30%) scale(0.4);
+    }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: rotate(0) translateY(0) scale(1);
+    }
+  }
 }
 
 :root {
@@ -337,6 +371,59 @@
   @supports not (animation-delay > :nth-child(16): calc(sibling-index() * 1ms)) {
     --fluid-index: 15;
   }
+  @supports (animation-delay: calc(sibling-index() * 1ms)) {}
+  @supports (animation-delay > *: calc(sibling-index() * 1ms)) {
+    --fluid-index: min(calc(sibling-index() - 1), 16);
+  }
+  @supports not (animation-delay: calc(sibling-index() * 1ms)) {}
+  @supports not (animation-delay > :nth-child(1): calc(sibling-index() * 1ms)) {
+    --fluid-index: 0;
+  }
+  @supports not (animation-delay > :nth-child(2): calc(sibling-index() * 1ms)) {
+    --fluid-index: 1;
+  }
+  @supports not (animation-delay > :nth-child(3): calc(sibling-index() * 1ms)) {
+    --fluid-index: 2;
+  }
+  @supports not (animation-delay > :nth-child(4): calc(sibling-index() * 1ms)) {
+    --fluid-index: 3;
+  }
+  @supports not (animation-delay > :nth-child(5): calc(sibling-index() * 1ms)) {
+    --fluid-index: 4;
+  }
+  @supports not (animation-delay > :nth-child(6): calc(sibling-index() * 1ms)) {
+    --fluid-index: 5;
+  }
+  @supports not (animation-delay > :nth-child(7): calc(sibling-index() * 1ms)) {
+    --fluid-index: 6;
+  }
+  @supports not (animation-delay > :nth-child(8): calc(sibling-index() * 1ms)) {
+    --fluid-index: 7;
+  }
+  @supports not (animation-delay > :nth-child(9): calc(sibling-index() * 1ms)) {
+    --fluid-index: 8;
+  }
+  @supports not (animation-delay > :nth-child(10): calc(sibling-index() * 1ms)) {
+    --fluid-index: 9;
+  }
+  @supports not (animation-delay > :nth-child(11): calc(sibling-index() * 1ms)) {
+    --fluid-index: 10;
+  }
+  @supports not (animation-delay > :nth-child(12): calc(sibling-index() * 1ms)) {
+    --fluid-index: 11;
+  }
+  @supports not (animation-delay > :nth-child(13): calc(sibling-index() * 1ms)) {
+    --fluid-index: 12;
+  }
+  @supports not (animation-delay > :nth-child(14): calc(sibling-index() * 1ms)) {
+    --fluid-index: 13;
+  }
+  @supports not (animation-delay > :nth-child(15): calc(sibling-index() * 1ms)) {
+    --fluid-index: 14;
+  }
+  @supports not (animation-delay > :nth-child(16): calc(sibling-index() * 1ms)) {
+    --fluid-index: 15;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -348,4 +435,12 @@
     -webkit-text-fill-color: var(--foreground);
     caret-color: var(--foreground);
     transition: background-color 0s 600000s, color 0s 600000s;
+}
+  html[data-theme-transition]::view-transition-old(root), html[data-theme-transition]::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+  html[data-theme-transition]::view-transition-new(root) {
+    mask: radial-gradient(closest-side, #fff calc(100% - 1px), transparent) no-repeat;
+    animation: theme-reveal 750ms ease-in-out both;
 }
