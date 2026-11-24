@@ -1,0 +1,26 @@
+/*
+ * Tema do projeto. Carregado depois do globals.css (que é do Mosaico e é reescrito a cada
+ * `shadcn add`). Este arquivo traz só as variáveis que mudam: aqui o tema é neutro, sem
+ * cores de nenhuma marca. Para aplicar a identidade da sua empresa, troque os valores abaixo.
+ */
+:root {
+  --primary: oklch(0.27 0.03 256);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.55 0.03 256);
+  --sidebar-primary: oklch(0.27 0.03 256);
+  --sidebar-ring: oklch(0.55 0.03 256);
+  --chart-brand: oklch(0.45 0.03 256);
+  --highlight: oklch(0.95 0.01 256);
+  --highlight-foreground: oklch(0.205 0 0);
+}
+
+.dark {
+  --primary: oklch(0.93 0.01 256);
+  --primary-foreground: oklch(0.205 0 0);
+  --ring: oklch(0.7 0.02 256);
+  --sidebar-primary: oklch(0.93 0.01 256);
+  --sidebar-ring: oklch(0.7 0.02 256);
+  --chart-brand: oklch(0.8 0.02 256);
+  --highlight: oklch(0.3 0.01 256);
+  --highlight-foreground: oklch(0.985 0 0);
+}

@@ -40,3 +40,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 credentials.json
+
+# chaves de conta de serviço do Google: nunca versionar
+service-account*.json
+*-credentials.json
+*.key
+
+# skills do Claude instaladas pelo init do Mosaico
+.claude/
+
+# o exemplo de variaveis de ambiente e versionado
+!.env.example

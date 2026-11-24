@@ -1,118 +1,85 @@
-// actions.ts
 "use server"
-import { randomUUID } from "crypto"
 
-type RawData = {
-  email: string
-  classId: string
-  title: string
-  validity: string
-  date: string
-  subheader: string
-  heroImage: string
-  logoImage: string
-  bgColor: string
+import { createHash, randomUUID } from "node:crypto"
+import { headers } from "next/headers"
+import { createRateLimiter } from "@/lib/rate-limit"
+import {
+  CredentialsError,
+  readDemoCredentials,
+  resolveOwnCredentials,
+  type WalletCredentials,
+} from "@/lib/wallet/credentials"
+import { createSaveUrl, ensureClass, WalletApiError } from "@/lib/wallet/google"
+import { buildPass, normalizePassInput, PassValidationError } from "@/lib/wallet/pass-builder"
+import type { CreatePassRequest, CreatePassResult, PassInput } from "@/lib/wallet/types"
+
+const demoLimitPerHour = Number(process.env.WALLET_DEMO_MAX_PER_HOUR) || 20
+const allowDemoRequest = createRateLimiter(demoLimitPerHour, 60 * 60 * 1000)
+
+/**
+ * No modo demo o emissor é compartilhado por todos os visitantes. O ID da classe sai do
+ * conteúdo dela: quem envia os mesmos dados reaproveita a classe, e ninguém sobrescreve a
+ * classe de outra pessoa.
+ */
+function demoClassSuffix(pass: PassInput): string {
+  const shared = [pass.type, pass.issuerName, pass.title, pass.logoUrl].join("\n")
+  return `demo_${pass.type}_${createHash("sha256").update(shared).digest("hex").slice(0, 16)}`
 }
 
-const BASE_URL                = process.env.NEXT_PUBLIC_BASE_URL!
-const GOOGLE_WALLET_ISSUER_ID = process.env.GOOGLE_WALLET_ISSUER_ID!
-
-export async function createPassAction(prevState: any, formData: FormData) {
-  const email     = formData.get("email")     as string
-  const classId   = formData.get("classId")   as string
-  const title     = formData.get("title")     as string
-  const validity  = formData.get("validity")  as string
-  const date      = formData.get("date")      as string
-  const subheader = formData.get("subheader") as string
-  const heroImage = formData.get("heroImage") as string
-  const logoImage = formData.get("logoImage") as string
-  const bgColor   = formData.get("bgColor")   as string
-
-  const rawData: RawData = {
-    email, classId, title, validity,
-    date, subheader, heroImage, logoImage, bgColor
-  }
-
-  const classPayload = {
-    id: `${GOOGLE_WALLET_ISSUER_ID}.${classId}`,
-    classTemplateInfo: {
-      hexBackgroundColor: bgColor,
-      cardTitle:    { defaultValue: { language: "pt-BR", value: title } },
-      subheader:    { defaultValue: { language: "pt-BR", value: subheader } },
-      header:       { defaultValue: { language: "pt-BR", value: email } },
-    },
-    imageModulesData: [
-      {
-        id: "heroImage",
-        mainImage: {
-          sourceUri: { uri: heroImage },
-          contentDescription: { defaultValue: { language: "pt-BR", value: "Imagem Principal" } }
-        }
-      },
-      {
-        id: "logoImage",
-        mainImage: {                         
-          sourceUri: { uri: logoImage },
-          contentDescription: { defaultValue: { language: "pt-BR", value: "Logo" } }
-        },
-        logo: {                              
-          sourceUri: { uri: logoImage }
-        }
-      }
-    ],
-    textModulesData: [
-      { header: "Data",       body: date,     id: "date"     },
-      { header: "Válido até", body: validity, id: "validity" }
-    ]
-  }
-
-
+/**
+ * Cria (ou reaproveita) a classe e devolve o link "Adicionar ao Google Wallet".
+ *
+ * Segurança: as credenciais do modo "own" chegam por esta chamada, são usadas em memória e
+ * descartadas ao final. Não são gravadas nem registradas em log, e nunca voltam na resposta.
+ */
+export async function createPassAction(request: CreatePassRequest): Promise<CreatePassResult> {
   try {
-    // a) cria/clona a classe
-    const classRes = await fetch(
-      `${BASE_URL}/api/wallet/class`,
-      {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(classPayload)
-      }
-    )
-    if (!classRes.ok && classRes.status !== 409) {
-      const err = await classRes.json()
-      throw new Error(err.error || "Erro criando classe")
+    const mode = request?.mode
+    if (mode !== "demo" && mode !== "own") {
+      return { ok: false, error: "Escolha como quer usar as credenciais." }
     }
 
-    // b) cria o objeto
-    const objectId = `${GOOGLE_WALLET_ISSUER_ID}.${randomUUID()}`
-    const genericObject = {
-      id:      objectId,
-      classId: classPayload.id,
-      hexBackgroundColor: bgColor,
-      cardTitle:    classPayload.classTemplateInfo.cardTitle,
-      subheader:    classPayload.classTemplateInfo.subheader,
-      header:       classPayload.classTemplateInfo.header,
-      heroImage:    { sourceUri: { uri: heroImage } },
-      logo:         { sourceUri: { uri: logoImage } },
-      textModulesData: classPayload.textModulesData
-    }
+    let pass = normalizePassInput(request.pass)
+    let credentials: WalletCredentials
 
-    const objRes = await fetch(
-      `${BASE_URL}/api/wallet/object`,
-      {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify(genericObject)
+    if (mode === "demo") {
+      const demo = readDemoCredentials()
+      if (!demo) {
+        return {
+          ok: false,
+          error: "As credenciais de demonstração não estão configuradas neste servidor.",
+          hint: 'Use "Minhas credenciais" ou defina as variáveis do .env.example.',
+        }
       }
-    )
-    const data = await objRes.json()
-
-    if (objRes.ok) {
-      return { rawData, saveUrl: data.saveUrl, error: "" }
+      const forwardedFor = (await headers()).get("x-forwarded-for")
+      const visitor = forwardedFor?.split(",")[0]?.trim() || "local"
+      if (!allowDemoRequest(visitor)) {
+        return {
+          ok: false,
+          error: "Limite de passes de demonstração atingido.",
+          hint: "Tente de novo mais tarde ou use as suas próprias credenciais.",
+        }
+      }
+      credentials = demo
+      pass = { ...pass, classSuffix: demoClassSuffix(pass) }
     } else {
-      return { rawData, saveUrl: "", error: data.error || "Erro desconhecido" }
+      credentials = resolveOwnCredentials(request.credentials)
     }
 
-  } catch (err: any) {
-    return { rawData, saveUrl: "", error: err.message || "Erro de rede ou servidor." }
+    const built = buildPass(credentials.issuerId, pass, randomUUID())
+    const classStatus = await ensureClass(credentials, built, mode === "own")
+    const saveUrl = createSaveUrl(credentials, built)
+
+    return { ok: true, saveUrl, classId: built.classId, objectId: built.objectId, classStatus }
+  } catch (error) {
+    if (error instanceof PassValidationError || error instanceof CredentialsError) {
+      return { ok: false, error: error.message }
+    }
+    if (error instanceof WalletApiError) {
+      return { ok: false, error: error.message, hint: error.hint }
+    }
+    // Nunca registre `request` aqui: no modo "own" ele contém a chave privada de quem enviou.
+    console.error("Erro inesperado ao criar passe:", error instanceof Error ? error.name : "desconhecido")
+    return { ok: false, error: "Erro inesperado no servidor. Tente novamente." }
   }
 }
